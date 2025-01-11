@@ -11,7 +11,7 @@ DATA_FILE = 'data.json'
 # Initialize data if the file doesn't exist
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'w') as f:
-        json.dump({"threads": [], "messages": []}, f)
+        json.dump({"categories": {}, "threads": [], "messages": []}, f)
 
 # Load data from JSON file
 def load_data():
@@ -23,54 +23,33 @@ def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=4)
 
-# App layout
-st.title("4chan-like Environment with Streamlit")
+# Load categories and subcategories
+data = load_data()
+categories = data.get("categories", {})
 
 # Sidebar for navigation
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", ["Home", "Direct Messages", "Search"])
-
-# Category and subcategory selection
-categories = {
-    "Art": ["Digital Art", "Traditional Art"],
-    "Videos": ["Gaming", "Music"],
-    "Photos": ["Nature", "Urban"],
-    "Programming": ["Python", "JavaScript"],
-    "Communities": ["Animal Community", "Gaming Community"]
-}
+selected_page = st.sidebar.selectbox("Go to", ["Home", "Messages", "Search", "Create Subcategory"])
 
 # Home Page
-if page == "Home":
-    st.subheader("Home")
-
-    # Select category and subcategory
-    selected_category = st.selectbox("Select a category", list(categories.keys()))
-    if selected_category in categories:
-        selected_subcategory = st.selectbox("Select a subcategory", categories[selected_category])
-    else:
-        selected_subcategory = None
-
-    # Display threads for the selected category and subcategory
-    st.subheader(f"{selected_category} - {selected_subcategory} Threads")
-    data = load_data()
-    threads = [thread for thread in data['threads'] if thread['category'] == selected_category and thread['subcategory'] == selected_subcategory]
-
-    for thread in threads:
-        st.write(f"**{thread['title']}**")
-        st.write(thread['content'])
-        if thread['image']:
-            st.image(thread['image'], use_column_width=True)
-        st.write("---")
-
-    # Create new thread
-    st.subheader("Create New Thread")
-    with st.form("thread_form"):
+if selected_page == "Home":
+    st.title("Welcome to the Community")
+    st.write("Hi there, what would you like to do?")
+    
+    # Options
+    option = st.selectbox("Choose an action", ["Create a Thread", "Message a Friend", "Search for a Topic", "Create a Subcategory"])
+    
+    if option == "Create a Thread":
+        st.subheader("Create New Thread")
+        selected_category = st.selectbox("Select a category", list(categories.keys()))
+        if selected_category in categories:
+            selected_subcategory = st.selectbox("Select a subcategory", categories[selected_category])
+        else:
+            selected_subcategory = None
         title = st.text_input("Title")
         content = st.text_area("Content")
         image = st.file_uploader("Upload Image", type=['jpg', 'png', 'jpeg'])
-        submit = st.form_submit_button("Submit")
-
-        if submit:
+        if st.button("Submit"):
             if title and content:
                 new_thread = {
                     "id": str(uuid4()),
@@ -91,71 +70,67 @@ if page == "Home":
                 st.success("Thread created successfully!")
             else:
                 st.warning("Please fill in the title and content.")
-
-# Direct Messages Page
-elif page == "Direct Messages":
-    st.subheader("Direct Messages")
-
-    # Load messages
-    data = load_data()
-    messages = data['messages']
-
-    # Display messages
-    for message in messages:
-        st.write(f"**From:** {message['sender']}")
-        st.write(f"**To:** {message['receiver']}")
-        st.write(f"**Message:** {message['content']}")
-        st.write("---")
-
-    # Send a new message
-    st.subheader("Send a Message")
-    with st.form("message_form"):
-        sender = st.text_input("Your Name")
-        receiver = st.text_input("Recipient's Name")
-        content = st.text_area("Message")
-        submit = st.form_submit_button("Send")
-
-        if submit:
-            if sender and receiver and content:
-                new_message = {
-                    "id": str(uuid4()),
-                    "sender": sender,
-                    "receiver": receiver,
-                    "content": content
-                }
-                data['messages'].append(new_message)
-                save_data(data)
-                st.success("Message sent successfully!")
+    
+    # Placeholder for other options
+    elif option == "Message a Friend":
+        st.subheader("Message a Friend")
+        # Message form here
+    
+    elif option == "Search for a Topic":
+        st.subheader("Search for a Topic")
+        # Search form here
+    
+    elif option == "Create a Subcategory":
+        st.subheader("Create a Subcategory")
+        selected_category = st.selectbox("Select a category to add subcategory", list(categories.keys()))
+        new_subcategory = st.text_input("New Subcategory Name")
+        if st.button("Add Subcategory"):
+            if new_subcategory:
+                if new_subcategory not in categories.get(selected_category, []):
+                    categories[selected_category].append(new_subcategory)
+                    data['categories'] = categories
+                    save_data(data)
+                    st.success(f"Subcategory '{new_subcategory}' added to '{selected_category}'.")
+                else:
+                    st.warning(f"Subcategory '{new_subcategory}' already exists in '{selected_category}'.")
             else:
-                st.warning("Please fill in all fields.")
+                st.warning("Please enter a subcategory name.")
+
+# Messages Page
+elif selected_page == "Messages":
+    st.subheader("Messages")
+    # Display messages here
 
 # Search Page
-elif page == "Search":
+elif selected_page == "Search":
     st.subheader("Search")
-
-    # Search bar
     search_query = st.text_input("Search for threads")
     if search_query:
-        data = load_data()
-        threads = [thread for thread in data['threads'] if search_query.lower() in thread['title'].lower() or search_query.lower() in thread['content'].lower()]
+        # Search functionality here
+        pass
 
-        if threads:
-            st.write(f"**Search results for '{search_query}':**")
-            for thread in threads:
-                st.write(f"**{thread['title']}**")
-                st.write(thread['content'])
-                if thread['image']:
-                    st.image(thread['image'], use_column_width=True)
-                st.write("---")
+# Create Subcategory Page
+elif selected_page == "Create Subcategory":
+    st.subheader("Create a Subcategory")
+    selected_category = st.selectbox("Select a category to add subcategory", list(categories.keys()))
+    new_subcategory = st.text_input("New Subcategory Name")
+    if st.button("Add Subcategory"):
+        if new_subcategory:
+            if new_subcategory not in categories.get(selected_category, []):
+                categories[selected_category].append(new_subcategory)
+                data['categories'] = categories
+                save_data(data)
+                st.success(f"Subcategory '{new_subcategory}' added to '{selected_category}'.")
+            else:
+                st.warning(f"Subcategory '{new_subcategory}' already exists in '{selected_category}'.")
         else:
-            st.warning("No threads found matching your search.")
+            st.warning("Please enter a subcategory name.")
 
 # Code sharing and execution
 st.sidebar.subheader("Share and Run Code")
 code = st.sidebar.text_area("Enter your code")
 if st.sidebar.button("Run Code"):
     if code:
-        # Encode the code to make it URL-safe
         encoded_code = urllib.parse.quote(code)
         link = f"https://myide.created.app?code={encoded_code}"
         st.sidebar.write(f"[Click here to run the code]({link})")
