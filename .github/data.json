@@ -1,34 +1,11 @@
 {
-  "threads": [
-    {
-      "id": "1",
-      "category": "Art",
-      "subcategory": "Digital Art",
-      "title": "My First Digital Painting",
-      "content": "Check out my first digital painting!",
-      "image": "images/1.jpg"
-    },
-    {
-      "id": "2",
-      "category": "Communities",
-      "subcategory": "Animal Community",
-      "title": "Cute Dog Pic",
-      "content": "Here's a picture of my dog!",
-      "image": "images/2.jpg"
-    }
-  ],
-  "messages": [
-    {
-      "id": "1",
-      "sender": "Alice",
-      "receiver": "Bob",
-      "content": "Hey Bob, how are you?"
-    },
-    {
-      "id": "2",
-      "sender": "Bob",
-      "receiver": "Alice",
-      "content": "I'm good, thanks! How about you?"
-    }
-  ]
+  "categories": {
+    "Art": ["Digital Art", "Traditional Art"],
+    "Videos": ["Gaming", "Music"],
+    "Photos": ["Nature", "Urban"],
+    "Programming": ["Python", "JavaScript"],
+    "Communities": ["Animal Community", "Gaming Community"]
+  },
+  "threads": [],
+  "messages": []
 }
